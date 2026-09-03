@@ -1,0 +1,302 @@
+﻿<ion-header mode="ios" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>
+      <span class="app-title">Para</span>
+      <span class="admin-badge">Admin</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [value]="activeTab" (ionChange)="setTab($event)" class="admin-segment">
+    <ion-segment-button value="categories">
+      <ion-icon name="grid-outline"></ion-icon>
+      <ion-label>Categories</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="owners">
+      <ion-icon name="people-outline"></ion-icon>
+      <ion-label>Owners</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="pricing">
+      <ion-icon name="cash-outline"></ion-icon>
+      <ion-label>Pricing</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="settings">
+      <ion-icon name="settings-outline"></ion-icon>
+      <ion-label>Settings</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="users">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>Users</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Categories Tab -->
+  <div class="admin-section" *ngIf="activeTab === 'categories'">
+    <div class="tab-header">
+      <h3>Vehicle Categories</h3>
+      <ion-button fill="outline" size="small" (click)="resetCategories()">
+        <ion-icon name="refresh-outline"></ion-icon> Reset
+      </ion-button>
+    </div>
+
+    <ion-card *ngFor="let cat of settings.categories; let i = index" class="edit-card">
+      <ion-card-header>
+        <ion-card-title>
+          <div class="category-icon {{ cat.id }}" style="display:inline-flex;margin-right:8px;width:32px;height:32px;font-size:16px;">
+            <ion-icon [name]="cat.icon"></ion-icon>
+          </div>
+          {{ cat.name }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Name</ion-label>
+          <ion-input [(ngModel)]="cat.name" placeholder="Category name"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Description</ion-label>
+          <ion-input [(ngModel)]="cat.description" placeholder="Short description"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Base Fare ($)</ion-label>
+          <ion-input type="number" [(ngModel)]="cat.baseFare" placeholder="0"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Rate per KM ($)</ion-label>
+          <ion-input type="number" [(ngModel)]="cat.baseRate" placeholder="0"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Minimum Fare ($)</ion-label>
+          <ion-input type="number" [(ngModel)]="cat.minFare" placeholder="0"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Max Passengers</ion-label>
+          <ion-input type="number" [(ngModel)]="cat.maxPassengers" placeholder="4"></ion-input>
+        </ion-item>
+        <ion-button expand="block" color="primary" (click)="saveCategory(i)" size="small">
+          <ion-icon name="save-outline"></ion-icon> Save
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Owners Tab -->
+  <div class="admin-section" *ngIf="activeTab === 'owners'">
+    <div class="tab-header">
+      <h3>Owners</h3>
+      <ion-button fill="outline" size="small" color="primary">
+        <ion-icon name="add-outline"></ion-icon> Add
+      </ion-button>
+    </div>
+
+    <ion-card *ngFor="let owner of owners" class="edit-card">
+      <ion-card-content>
+        <div class="owner-header">
+          <div class="owner-avatar">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <div class="owner-info">
+            <div class="owner-name">{{ owner.fullName }}</div>
+            <div class="owner-email">{{ owner.email }}</div>
+          </div>
+        </div>
+        <ion-item>
+          <ion-label position="stacked">Full Name</ion-label>
+          <ion-input [(ngModel)]="owner.fullName"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Phone</ion-label>
+          <ion-input [(ngModel)]="owner.phone"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Car: Make / Model</ion-label>
+          <ion-input [(ngModel)]="owner.carInfo.make" placeholder="Make"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Car: Model</ion-label>
+          <ion-input [(ngModel)]="owner.carInfo.model" placeholder="Model"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Car: Year</ion-label>
+          <ion-input type="number" [(ngModel)]="owner.carInfo.year"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Car: Color</ion-label>
+          <ion-input [(ngModel)]="owner.carInfo.color"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Plate Number</ion-label>
+          <ion-input [(ngModel)]="owner.carInfo.plateNumber"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Category</ion-label>
+          <ion-select [(ngModel)]="owner.carInfo.category">
+            <ion-select-option value="economy">Economy</ion-select-option>
+            <ion-select-option value="comfort">Comfort</ion-select-option>
+            <ion-select-option value="premium">Premium</ion-select-option>
+            <ion-select-option value="vanxl">Van / XL</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div class="action-buttons">
+          <ion-button fill="outline" color="danger" size="small" (click)="removeOwner(owner.userId)">
+            <ion-icon name="trash-outline"></ion-icon> Remove
+          </ion-button>
+          <ion-button color="primary" size="small" (click)="saveOwner(owner)">
+            <ion-icon name="save-outline"></ion-icon> Save
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Pricing Tab -->
+  <div class="admin-section" *ngIf="activeTab === 'pricing'">
+    <div class="tab-header">
+      <h3>Pricing Settings</h3>
+    </div>
+
+    <ion-card class="edit-card">
+      <ion-card-header>
+        <ion-card-title>General Pricing</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Base Multiplier</ion-label>
+          <ion-input type="number" [(ngModel)]="settings.pricing.baseMultiplier" placeholder="1.0"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Peak Hour Multiplier</ion-label>
+          <ion-input type="number" [(ngModel)]="settings.pricing.peakHourMultiplier" placeholder="1.5"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Night Multiplier</ion-label>
+          <ion-input type="number" [(ngModel)]="settings.pricing.nightMultiplier" placeholder="1.25"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Surge Pricing Enabled</ion-label>
+          <ion-toggle [(ngModel)]="settings.pricing.surgePricing"></ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="edit-card">
+      <ion-card-header>
+        <ion-card-title>Peak Hours</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Morning Peak</ion-label>
+          <ion-note>07:00 - 09:00</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>Evening Peak</ion-label>
+          <ion-note>17:00 - 19:00</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>Night Hours</ion-label>
+          <ion-note>22:00 - 06:00</ion-note>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button expand="block" color="primary" (click)="savePricing()">
+      <ion-icon name="save-outline"></ion-icon> Save Pricing Settings
+    </ion-button>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="admin-section" *ngIf="activeTab === 'settings'">
+    <div class="tab-header">
+      <h3>System Settings</h3>
+    </div>
+
+    <ion-card class="edit-card">
+      <ion-card-header>
+        <ion-card-title>System Configuration</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">App Name</ion-label>
+          <ion-input [(ngModel)]="settings.system.appName" placeholder="Para"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Support Email</ion-label>
+          <ion-input [(ngModel)]="settings.system.supportEmail" placeholder="support@para.com" type="email"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Commission Rate (%)</ion-label>
+          <ion-input type="number" [(ngModel)]="settings.system.commissionRate" placeholder="15"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Minimum Driver Rating</ion-label>
+          <ion-input type="number" [(ngModel)]="settings.system.minimumDriverRating" placeholder="4.5"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button expand="block" color="primary" (click)="saveSettings()">
+      <ion-icon name="save-outline"></ion-icon> Save System Settings
+    </ion-button>
+  </div>
+
+  <!-- Users Tab -->
+  <div class="admin-section" *ngIf="activeTab === 'users'">
+    <div class="tab-header">
+      <h3>Users</h3>
+      <ion-button fill="outline" size="small" color="primary" (click)="addNewUser()">
+        <ion-icon name="add-outline"></ion-icon> Add
+      </ion-button>
+    </div>
+
+    <ion-card *ngFor="let user of users" class="edit-card">
+      <ion-card-content>
+        <div class="user-row">
+          <div class="user-avatar">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ user.username }}</div>
+            <div class="user-email">{{ user.email }}</div>
+          </div>
+          <ion-badge [color]="user.role === 'administrator' ? 'tertiary' : (user.role === 'owner' ? 'primary' : 'secondary')">
+            {{ user.role }}
+          </ion-badge>
+        </div>
+        <ion-item>
+          <ion-label position="stacked">Username</ion-label>
+          <ion-input [(ngModel)]="user.username"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input [(ngModel)]="user.email" type="email"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Phone</ion-label>
+          <ion-input [(ngModel)]="user.phone"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Role</ion-label>
+          <ion-select [(ngModel)]="user.role">
+            <ion-select-option value="passenger">Passenger</ion-select-option>
+            <ion-select-option value="owner">Owner</ion-select-option>
+            <ion-select-option value="administrator">Administrator</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div class="action-buttons">
+          <ion-button fill="outline" color="danger" size="small" (click)="removeUser(user.id)">
+            <ion-icon name="trash-outline"></ion-icon> Remove
+          </ion-button>
+          <ion-button color="primary" size="small" (click)="updateUser(user)">
+            <ion-icon name="save-outline"></ion-icon> Save
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

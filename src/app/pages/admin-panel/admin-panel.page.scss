@@ -1,0 +1,26 @@
+﻿.app-title { font-size: 20px; font-weight: 800; color: var(--ion-color-primary); }
+.admin-badge { font-size: 12px; font-weight: 500; color: var(--ion-color-tertiary); background: #fff3e0; padding: 2px 8px; border-radius: 12px; margin-left: 8px; }
+.admin-segment { padding: 8px 4px; --background: #f5f6fa; }
+.admin-segment ion-segment-button { --border-radius: 12px; min-width: auto; padding: 4px 8px; --padding-top: 8px; --padding-bottom: 8px; }
+.admin-segment ion-segment-button ion-icon { font-size: 18px; }
+.admin-segment ion-segment-button ion-label { font-size: 10px; margin-top: 2px; }
+.admin-section { padding: 12px; }
+.tab-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.tab-header h3 { margin: 0; font-size: 20px; font-weight: 700; }
+.edit-card { border-radius: 16px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.edit-card ion-card-header { padding-bottom: 0; }
+.edit-card ion-card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; }
+.edit-card ion-item { --padding-start: 0; --inner-padding-end: 0; --background: transparent; }
+.action-buttons { display: flex; gap: 8px; margin-top: 16px; }
+.action-buttons ion-button { flex: 1; --border-radius: 12px; }
+.owner-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.owner-avatar { width: 48px; height: 48px; border-radius: 50%; background: #e3f2fd; display: flex; align-items: center; justify-content: center; }
+.owner-avatar ion-icon { font-size: 24px; color: var(--ion-color-primary); }
+.owner-name { font-weight: 600; font-size: 16px; }
+.owner-email { font-size: 13px; color: var(--ion-color-medium); }
+.user-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #f5f6fa; display: flex; align-items: center; justify-content: center; }
+.user-avatar ion-icon { font-size: 20px; color: var(--ion-color-medium); }
+.user-info { flex: 1; }
+.user-name { font-weight: 600; }
+.user-email { font-size: 12px; color: var(--ion-color-medium); }

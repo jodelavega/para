@@ -1,0 +1,182 @@
+﻿<ion-header mode="ios" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <span class="app-title">Para</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="showProfile()">
+        <ion-icon name="person-circle-outline" slot="icon-only" size="large"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="passenger-content">
+  <div class="map-wrapper" #mapContainer>
+    <div class="map-placeholder">
+      <div class="map-overlay">
+        <div class="current-location-marker">
+          <div class="marker-pulse"></div>
+          <div class="marker-dot"></div>
+        </div>
+      </div>
+      <div class="map-info">
+        <div class="location-badge">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>Current Location: {{ currentAddress || 'Detecting...' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-sheet">
+    <div class="search-section">
+      <div class="where-to-card" (click)="openSearch()">
+        <div class="pickup-dot"></div>
+        <div class="where-to-input" *ngIf="!destination">
+          <span class="placeholder-text">Where to?</span>
+        </div>
+        <div class="where-to-input filled" *ngIf="destination">
+          <span>{{ destination }}</span>
+        </div>
+        <ion-icon name="arrow-forward-outline" slot="end" color="medium"></ion-icon>
+      </div>
+
+      <div class="quick-options" *ngIf="!showCategories">
+        <ion-chip outline="true" (click)="setQuickDestination('Airport')">
+          <ion-icon name="airplane-outline"></ion-icon>
+          <span>Airport</span>
+        </ion-chip>
+        <ion-chip outline="true" (click)="setQuickDestination('Work')">
+          <ion-icon name="briefcase-outline"></ion-icon>
+          <span>Work</span>
+        </ion-chip>
+        <ion-chip outline="true" (click)="setQuickDestination('Home')">
+          <ion-icon name="home-outline"></ion-icon>
+          <span>Home</span>
+        </ion-chip>
+        <ion-chip outline="true" (click)="setQuickDestination('Restaurant')">
+          <ion-icon name="restaurant-outline"></ion-icon>
+          <span>Restaurant</span>
+        </ion-chip>
+      </div>
+
+      <div class="search-input-container" *ngIf="showSearch">
+        <ion-item class="search-item">
+          <ion-icon name="search-outline" slot="start"></ion-icon>
+          <ion-input
+            [(ngModel)]="searchQuery"
+            (ionInput)="onSearchInput()"
+            placeholder="Search destination..."
+            autofocus="true"
+          ></ion-input>
+          <ion-button fill="clear" slot="end" (click)="closeSearch()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <div class="search-results" *ngIf="searchResults.length > 0">
+          <ion-item *ngFor="let result of searchResults" (click)="selectDestination(result)">
+            <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h2>{{ result.name }}</h2>
+              <p>{{ result.address }}</p>
+            </ion-label>
+          </ion-item>
+        </div>
+      </div>
+    </div>
+
+    <div class="categories-section" *ngIf="showCategories">
+      <div class="section-header">
+        <h3>Choose a ride</h3>
+        <span class="distance-info">{{ distance }} km</span>
+      </div>
+
+      <div
+        class="category-card"
+        *ngFor="let category of categories"
+        [class.selected]="selectedCategory?.id === category.id"
+        (click)="selectCategory(category)"
+      >
+        <div class="category-icon {{ category.id }}">
+          <ion-icon [name]="category.icon"></ion-icon>
+        </div>
+        <div class="category-info">
+          <div class="category-name">{{ category.name }}</div>
+          <div class="category-desc">{{ category.description }}</div>
+          <div class="category-capacity">
+            <ion-icon name="people-outline"></ion-icon>
+            {{ category.maxPassengers }} seats
+          </div>
+        </div>
+        <div class="category-price">
+          <div class="fare">{{ getFare(category) | currency:'USD':'symbol':'1.0-2' }}</div>
+          <div class="surcharge-label" *ngIf="getSurcharge(category).multiplier > 1">
+            {{ getSurcharge(category).label }}
+          </div>
+        </div>
+      </div>
+
+      <div class="estimated-info">
+        <div class="info-row">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>Arrival in {{ duration }} min</span>
+        </div>
+        <div class="info-row">
+          <ion-icon name="navigate-outline"></ion-icon>
+          <span>{{ distance }} km away</span>
+        </div>
+      </div>
+
+      <ion-button expand="block" size="large" class="request-button" (click)="requestRide()" [disabled]="!selectedCategory">
+        <ion-icon name="car-outline" slot="start"></ion-icon>
+        Request {{ selectedCategory?.name || 'Ride' }}
+      </ion-button>
+    </div>
+
+    <div class="active-ride-section" *ngIf="activeRide">
+      <div class="ride-status">
+        <div class="spinner-section" *ngIf="activeRide.status === 'pending'">
+          <ion-spinner name="lines" color="primary"></ion-spinner>
+          <p>Looking for a driver...</p>
+        </div>
+        <div class="status-section" *ngIf="activeRide.status !== 'pending'">
+          <p>{{ getStatusLabel(activeRide.status) }}</p>
+        </div>
+
+        <div class="ride-details">
+          <div class="ride-detail-row">
+            <div class="pickup-dot"></div>
+            <span>{{ activeRide.pickupAddress }}</span>
+          </div>
+          <div class="ride-detail-row">
+            <div class="dropoff-dot"></div>
+            <span>{{ activeRide.dropoffAddress }}</span>
+          </div>
+        </div>
+
+        <div class="fare-display">
+          <span class="fare-label">Estimated fare</span>
+          <span class="fare-value">{{ activeRide.estimatedFare | currency:'USD':'symbol' }}</span>
+        </div>
+
+        <ion-button fill="outline" color="danger" expand="block" (click)="cancelRide()" *ngIf="activeRide.status === 'pending'">
+          Cancel Ride
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer mode="ios" class="ion-no-border" *ngIf="!showCategories && !activeRide">
+  <ion-toolbar>
+    <ion-button expand="block" shape="round" class="where-to-button" (click)="openSearch()">
+      <ion-icon name="search-outline" slot="start"></ion-icon>
+      Where to?
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

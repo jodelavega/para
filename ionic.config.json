@@ -1,0 +1,7 @@
+{
+  "name": "para",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

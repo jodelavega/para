@@ -1,0 +1,75 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title class="ion-text-center">
+      <span class="app-logo">Para</span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <div class="welcome-section">
+      <div class="logo-icon">
+        <ion-icon name="car-sport-outline" color="primary" size="large"></ion-icon>
+      </div>
+      <h1>Welcome to Para</h1>
+      <p>Choose your role to get started</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+      <!-- Role Selection -->
+      <ion-list lines="none" class="role-selector">
+        <ion-radio-group formControlName="role" (ionChange)="onRoleChange()">
+          <ion-item class="role-item" *ngFor="let role of roles">
+            <ion-radio [value]="role.value" slot="start">
+              <ion-icon [name]="role.icon" slot="label"></ion-icon>
+            </ion-radio>
+            <ion-label>
+              <div class="role-label">
+                <ion-icon [name]="role.icon" slot="start"></ion-icon>
+                <span>{{ role.label }}</span>
+              </div>
+              <p class="role-description">{{ role.description }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+
+      <!-- Username -->
+      <ion-item class="input-item">
+        <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+        <ion-input
+          formControlName="username"
+          placeholder="Username"
+          type="text"
+          autocomplete="username"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Password -->
+      <ion-item class="input-item">
+        <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+        <ion-input
+          formControlName="password"
+          placeholder="Password"
+          type="password"
+          autocomplete="current-password"
+        ></ion-input>
+      </ion-item>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Login Button -->
+      <ion-button type="submit" expand="block" class="login-button" size="large">
+        Sign In
+      </ion-button>
+
+      <div class="demo-info">
+        <p><ion-icon name="information-circle-outline"></ion-icon> Demo: use any username, select role</p>
+      </div>
+    </form>
+  </div>
+</ion-content>

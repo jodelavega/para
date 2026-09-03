@@ -1,0 +1,161 @@
+﻿<ion-header mode="ios" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>
+      <span class="app-title">Para</span>
+      <span class="owner-badge">Owner</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleOnline()" [color]="isOnline ? 'success' : 'medium'">
+        <ion-icon [name]="isOnline ? 'radio-button-on-outline' : 'radio-button-off-outline'" slot="start"></ion-icon>
+        {{ isOnline ? 'Online' : 'Offline' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="owner-content" *ngIf="ownerInfo">
+  <!-- Top Stats Section -->
+  <div class="stats-section">
+    <div class="dashboard-stat">
+      <div class="label">Today's Earnings</div>
+      <div class="value">{{ ownerInfo.earnings.today | currency:'USD':'symbol' }}</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">This Week</span>
+        <span class="stat-value">{{ ownerInfo.earnings.thisWeek | currency:'USD':'symbol' }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">This Month</span>
+        <span class="stat-value">{{ ownerInfo.earnings.thisMonth | currency:'USD':'symbol' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Owner & Car Info -->
+  <div class="info-section">
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Personal Info</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="info-row">
+          <ion-icon name="person-outline"></ion-icon>
+          <span>{{ ownerInfo.fullName }}</span>
+        </div>
+        <div class="info-row">
+          <ion-icon name="call-outline"></ion-icon>
+          <span>{{ ownerInfo.phone }}</span>
+        </div>
+        <div class="info-row">
+          <ion-icon name="mail-outline"></ion-icon>
+          <span>{{ ownerInfo.email }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>Car Info</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="car-image">
+          <ion-icon name="car-sport-outline" color="primary"></ion-icon>
+        </div>
+        <div class="info-row">
+          <span class="label">Make/Model</span>
+          <span class="value">{{ ownerInfo.carInfo.make }} {{ ownerInfo.carInfo.model }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Year</span>
+          <span class="value">{{ ownerInfo.carInfo.year }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Color</span>
+          <span class="value">{{ ownerInfo.carInfo.color }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Plate</span>
+          <span class="value">{{ ownerInfo.carInfo.plateNumber }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Category</span>
+          <span class="value category-tag {{ ownerInfo.carInfo.category }}">{{ ownerInfo.carInfo.category }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Ride Requests Section -->
+  <div class="requests-section">
+    <div class="section-header">
+      <h3>Ride Requests</h3>
+      <ion-badge color="primary">{{ pendingRequests.length }}</ion-badge>
+    </div>
+
+    <div class="empty-state" *ngIf="pendingRequests.length === 0 && !isOnline">
+      <ion-icon name="car-outline"></ion-icon>
+      <p>Go online to receive ride requests</p>
+    </div>
+
+    <div class="empty-state" *ngIf="pendingRequests.length === 0 && isOnline">
+      <ion-icon name="search-outline"></ion-icon>
+      <p>Waiting for nearby requests...</p>
+      <ion-spinner name="lines" color="primary"></ion-spinner>
+    </div>
+
+    <div class="ride-request-card" *ngFor="let request of pendingRequests">
+      <div class="request-header">
+        <div class="passenger-info">
+          <div class="passenger-avatar" [style.backgroundImage]="'url(' + request.passengerPhoto + ')'">
+            <ion-icon name="person-outline" *ngIf="!request.passengerPhoto"></ion-icon>
+          </div>
+          <div>
+            <div class="passenger-name">{{ request.passengerName }}</div>
+            <div class="request-time">{{ request.createdAt | date:'shortTime' }}</div>
+          </div>
+        </div>
+        <ion-badge [color]="request.category === 'premium' ? 'tertiary' : (request.category === 'comfort' ? 'primary' : 'secondary')">
+          {{ request.category }}
+        </ion-badge>
+      </div>
+
+      <div class="request-locations">
+        <div class="location-row">
+          <div class="pickup-dot"></div>
+          <div class="location-address">{{ request.pickupAddress }}</div>
+        </div>
+        <div class="location-row">
+          <div class="dropoff-dot"></div>
+          <div class="location-address">{{ request.dropoffAddress }}</div>
+        </div>
+      </div>
+
+      <div class="request-details">
+        <div class="detail">
+          <ion-icon name="navigate-outline"></ion-icon>
+          <span>{{ request.distance }} km</span>
+        </div>
+        <div class="detail">
+          <ion-icon name="time-outline"></ion-icon>
+          <span>{{ request.duration }} min</span>
+        </div>
+        <div class="detail fare">
+          <span>Fare:</span>
+          <strong>{{ request.estimatedFare | currency:'USD':'symbol' }}</strong>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <ion-button fill="outline" color="medium" expand="block">
+          <ion-icon name="close-outline"></ion-icon>
+          Decline
+        </ion-button>
+        <ion-button color="primary" expand="block" (click)="acceptRide(request.id)">
+          <ion-icon name="checkmark-outline"></ion-icon>
+          Accept
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

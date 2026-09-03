@@ -1,0 +1,8 @@
+node_modules/
+www/
+dist/
+resources/
+*.log
+.DS_Store
+Thumbs.db
+capacitor-cordova-android-plugins/

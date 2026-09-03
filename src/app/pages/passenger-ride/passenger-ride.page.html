@@ -1,0 +1,57 @@
+﻿<ion-header mode="ios" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Your Ride</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/passenger-home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ride-tracking" *ngIf="ride">
+    <div class="map-placeholder">
+      <ion-icon name="navigate-outline" color="primary"></ion-icon>
+      <p>Your driver is on the way!</p>
+    </div>
+
+    <div class="ride-info-card">
+      <div class="status-badge {{ ride.status }}">
+        <ion-icon [name]="statusIcon"></ion-icon>
+        <span>{{ getStatusLabel(ride.status) }}</span>
+      </div>
+
+      <div class="info-section">
+        <div class="info-row">
+          <div class="pickup-dot"></div>
+          <span>{{ ride.pickupAddress }}</span>
+        </div>
+        <div class="info-row">
+          <div class="dropoff-dot"></div>
+          <span>{{ ride.dropoffAddress }}</span>
+        </div>
+      </div>
+
+      <div class="driver-card" *ngIf="ride.status === 'accepted' || ride.status === 'arrived'">
+        <div class="driver-avatar">
+          <ion-icon name="person-circle-outline" size="large"></ion-icon>
+        </div>
+        <div class="driver-info">
+          <div class="driver-name">Driver arriving</div>
+          <div class="car-model">Toyota Camry - ABC 1234</div>
+        </div>
+        <ion-button fill="clear" color="primary">
+          <ion-icon name="call-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="ride-fare">
+        <span class="label">Estimated fare</span>
+        <span class="amount">{{ ride.estimatedFare | currency:"USD":"symbol" }}</span>
+      </div>
+
+      <ion-button fill="outline" color="danger" expand="block" (click)="cancelRide()" *ngIf="ride.status === 'pending' || ride.status === 'accepted'">
+        Cancel Ride
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

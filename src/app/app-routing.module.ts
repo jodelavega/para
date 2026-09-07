@@ -19,6 +19,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/owner-dashboard/owner-dashboard.module').then(m => m.OwnerDashboardPageModule)
   },
   {
+    path: 'owner-ride',
+    loadChildren: () => import('./pages/owner-ride/owner-ride.module').then(m => m.OwnerRidePageModule)
+  },
+  {
     path: 'admin-panel',
     loadChildren: () => import('./pages/admin-panel/admin-panel.module').then(m => m.AdminPanelPageModule)
   }

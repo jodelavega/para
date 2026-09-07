@@ -1,60 +1,194 @@
-﻿.app-title { font-size: 20px; font-weight: 800; color: var(--ion-color-primary); }
-.passenger-content { --background: #ffffff; }
-.map-wrapper { position: relative; width: 100%; height: 45vh; background: #e8eaf6; overflow: hidden; }
-.map-placeholder { width: 100%; height: 100%; background: linear-gradient(180deg, #e8eaf6 0%, #c5cae9 100%); display: flex; align-items: center; justify-content: center; position: relative; }
-.map-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.current-location-marker { position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-.marker-pulse { position: absolute; width: 30px; height: 30px; background: var(--ion-color-primary); opacity: 0.3; border-radius: 50%; animation: pulse 2s ease-out infinite; }
-.marker-dot { width: 14px; height: 14px; background: var(--ion-color-primary); border: 3px solid white; border-radius: 50%; z-index: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.app-title { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+.passenger-content { --background: var(--ion-color-dark); }
+.map-wrapper { position: relative; width: 100%; height: 45vh; background: #1a252f; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.map-placeholder { width: 100%; height: 100%; background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+.marker-pulse { position: absolute; width: 30px; height: 30px; background: #4ca1af; opacity: 0.4; border-radius: 50%; animation: pulse 2s ease-out infinite; }
+.marker-dot { width: 14px; height: 14px; background: #4ca1af; border: 3px solid #fff; border-radius: 50%; z-index: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
 @keyframes pulse { 0% { transform: scale(0.5); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
-.map-info { position: absolute; top: 16px; left: 16px; right: 16px; }
-.location-badge { background: rgba(255,255,255,0.95); padding: 8px 16px; border-radius: 24px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
-.location-badge ion-icon { color: var(--ion-color-primary); font-size: 16px; }
-.bottom-sheet { background: #ffffff; border-radius: 20px 20px 0 0; margin-top: -20px; position: relative; z-index: 10; padding: 20px 16px; max-height: 55vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
-.search-section { margin-bottom: 16px; }
-.where-to-card { display: flex; align-items: center; padding: 16px; background: #f8f9fa; border-radius: 16px; cursor: pointer; gap: 12px; transition: all 0.2s; border: 2px solid transparent; }
-.where-to-card:hover { border-color: var(--ion-color-primary); background: #f0f7ff; }
-.pickup-dot { width: 12px; height: 12px; background: var(--ion-color-primary); border-radius: 50%; flex-shrink: 0; }
-.dropoff-dot { width: 12px; height: 12px; background: var(--ion-color-dark); border-radius: 50%; flex-shrink: 0; }
+.map-info { position: absolute; top: 16px; left: 16px; right: 16px; z-index: 1000; }
+.location-badge { background: rgba(26, 37, 47, 0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 24px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+.location-badge ion-icon { color: #4ca1af; font-size: 16px; }
+.bottom-sheet { background: #1a252f; border-radius: 20px 20px 0 0; margin-top: -20px; position: relative; z-index: 10; padding: 20px 16px; max-height: 55vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); border-top: 1px solid rgba(255,255,255,0.15); color: #fff; }
+.where-to-card { display: flex; align-items: center; padding: 16px; background: #243342; border-radius: 16px; cursor: pointer; gap: 12px; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); }
+.where-to-card:hover { border-color: #4ca1af; background: #2c4257; }
+.pickup-dot { width: 12px; height: 12px; background: #4ca1af; border-radius: 50%; }
+.dropoff-dot { width: 12px; height: 12px; background: #bdc3c7; border-radius: 50%; }
 .where-to-input { flex: 1; }
-.placeholder-text { color: var(--ion-color-medium); font-size: 16px; font-weight: 500; }
-.where-to-input.filled span { font-weight: 600; color: var(--ion-color-dark); }
-.quick-options { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; scrollbar-width: none; }
-.quick-options::-webkit-scrollbar { display: none; }
-.quick-options ion-chip { --background: #f0f7ff; --color: var(--ion-color-primary); font-weight: 500; white-space: nowrap; }
-.search-item { --background: #f8f9fa; --border-radius: 12px; border-radius: 12px; }
+.placeholder-text { color: #95a5a6; font-size: 16px; font-weight: 500; }
+.where-to-input.filled span { font-weight: 600; color: #fff; }
+.quick-options { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0; }
+.quick-options ion-chip { --background: #243342; --color: #4ca1af; border: 1px solid rgba(76,161,175,0.3); font-weight: 500; }
+.search-item { --background: #243342; --color: #fff; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
 .search-results { margin-top: 8px; max-height: 200px; overflow-y: auto; }
-.search-results ion-item { --background: #ffffff; cursor: pointer; }
-.search-results ion-item:hover { --background: #f8f9fa; }
-.categories-section { margin-top: 8px; }
+.search-results ion-item { --background: #243342; --color: #fff; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.section-header h3 { margin: 0; font-size: 18px; font-weight: 700; }
-.distance-info { font-size: 14px; color: var(--ion-color-medium); }
-.category-card { display: flex; align-items: center; padding: 16px; margin: 8px 0; border-radius: 12px; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: all 0.2s ease; border: 2px solid transparent; }
-.category-card:hover { border-color: var(--ion-color-primary); }
-.category-card.selected { border-color: var(--ion-color-primary); background: #f0f7ff; }
-.category-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 24px; flex-shrink: 0; }
-.category-icon.economy { background: #e8f5e9; color: #2e7d32; }
-.category-icon.comfort { background: #e3f2fd; color: #1565c0; }
-.category-icon.premium { background: #fff3e0; color: #e65100; }
-.category-icon.vanxl { background: #f3e5f5; color: #7b1fa2; }
-.category-info { flex: 1; }
-.category-name { font-weight: 600; font-size: 16px; margin-bottom: 2px; }
-.category-desc { font-size: 12px; color: var(--ion-color-medium); }
-.category-capacity { font-size: 11px; color: var(--ion-color-medium); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
-.category-price { text-align: right; }
-.fare { font-size: 18px; font-weight: 700; color: var(--ion-color-dark); }
-.surcharge-label { font-size: 10px; color: var(--ion-color-tertiary); background: #fff3e0; padding: 2px 6px; border-radius: 4px; margin-top: 2px; }
-.estimated-info { display: flex; gap: 16px; margin: 12px 0; padding: 12px; background: #f8f9fa; border-radius: 12px; }
-.info-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ion-color-medium); }
-.request-button { --border-radius: 16px; height: 52px; font-weight: 600; font-size: 16px; margin: 16px 0; }
-.active-ride-section { padding: 8px 0; }
-.ride-status { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 16px; }
-.spinner-section { margin-bottom: 16px; }
-.spinner-section p { margin: 8px 0 0; color: var(--ion-color-medium); }
-.ride-details { text-align: left; margin: 16px 0; padding: 12px; background: white; border-radius: 12px; }
-.ride-detail-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 14px; }
-.fare-display { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin: 8px 0; border-top: 1px solid #eee; }
-.fare-label { color: var(--ion-color-medium); }
-.fare-value { font-size: 20px; font-weight: 700; }
-.where-to-button { --border-radius: 24px; height: 48px; font-weight: 500; --background: #ffffff; --color: var(--ion-color-dark); --border-color: var(--ion-color-primary); --border-style: solid; --border-width: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.section-header h3 { margin: 0; font-size: 18px; color: #fff; }
+.distance-info { font-size: 14px; color: #95a5a6; }
+.category-card { display: flex; align-items: center; padding: 16px; margin: 8px 0; border-radius: 12px; background: #243342; border: 2px solid transparent; color: #fff; }
+.category-card.selected { border-color: #4ca1af; background: #2c4257; }
+.category-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 24px; }
+.category-icon.economy { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.category-icon.comfort { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+.category-icon.premium { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+.category-icon.vanxl { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+.category-name { font-weight: 600; color: #fff; }
+.category-desc { font-size: 12px; color: #95a5a6; }
+.fare { font-size: 18px; font-weight: 700; color: #fff; }
+.estimated-info { display: flex; gap: 16px; margin: 12px 0; padding: 12px; background: #243342; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+.request-button { --border-radius: 16px; --background: linear-gradient(135deg, #2c3e50, #4ca1af); height: 52px; font-weight: 700; font-size: 16px; }
+.ride-status { text-align: center; padding: 20px; background: #243342; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+.ride-details { text-align: left; margin: 16px 0; padding: 12px; background: #1a252f; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+.ride-detail-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 14px; color: #fff; }
+.fare-display { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+.where-to-button { --border-radius: 24px; height: 48px; font-weight: 600; --background: #243342; --color: #fff; --border-color: #4ca1af; --border-style: solid; --border-width: 1px; }
+/* ===== Driver ETA Section for Accepted Rides ===== */
+.driver-eta-section {
+  margin: 12px 0;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.driver-eta-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #1a252f;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  gap: 8px;
+}
+
+.eta-metric {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
+.eta-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.eta-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #95a5a6;
+  text-transform: uppercase;
+}
+
+.eta-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Driver Progress Bar */
+.driver-progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.driver-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.driver-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.driver-progress-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2ecc71;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Driver Info Card */
+.driver-info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a252f;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.driver-avatar-section {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #2ecc71;
+  flex-shrink: 0;
+}
+
+.driver-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.driver-details-section {
+  flex: 1;
+  text-align: left;
+}
+
+.driver-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.driver-car-info {
+  font-size: 12px;
+  color: #95a5a6;
+  margin-bottom: 2px;
+}
+
+.driver-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1c40f;
+}
+
+.call-driver-btn {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  height: 40px;
+  width: 40px;
+}
+
+/* Car Marker Animation */
+@keyframes carPulse {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

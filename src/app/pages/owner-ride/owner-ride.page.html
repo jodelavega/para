@@ -1,0 +1,142 @@
+<ion-header mode="ios" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <span class="toolbar-title" *ngIf="currentPhase === 'heading_to_pickup'">Pickup Navigation</span>
+      <span class="toolbar-title" *ngIf="currentPhase === 'arrived_at_pickup'">Passenger Pickup</span>
+      <span class="toolbar-title" *ngIf="currentPhase === 'trip_in_progress'">Trip in Progress</span>
+      <span class="toolbar-title" *ngIf="currentPhase === 'completed'">Trip Completed</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-badge [color]="currentPhase === 'completed' ? 'success' : (currentPhase === 'arrived_at_pickup' ? 'warning' : 'primary')">
+        {{ currentPhase === 'heading_to_pickup' ? 'En Route' : (currentPhase === 'arrived_at_pickup' ? 'Arrived' : (currentPhase === 'trip_in_progress' ? 'Driving' : 'Done')) }}
+      </ion-badge>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="owner-ride-content" [fullscreen]="true" *ngIf="ride">
+  <div class="map-wrapper">
+    <!-- Leaflet Map Container -->
+    <div id="owner-map" class="leaflet-map-view"></div>
+
+    <!-- Live ETA & Distance Overlay floating on the map -->
+    <div class="live-metrics-overlay">
+      <div class="metric-card">
+        <div class="metric-icon-wrap time">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">TIME LEFT</span>
+          <span class="metric-val time-highlight">{{ timeLeft }}</span>
+        </div>
+      </div>
+
+      <div class="metric-divider"></div>
+
+      <div class="metric-card">
+        <div class="metric-icon-wrap distance">
+          <ion-icon name="navigate-outline"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">
+            {{ currentPhase === 'trip_in_progress' ? 'TO DESTINATION' : 'TO PICKUP' }}
+          </span>
+          <span class="metric-val distance-highlight">{{ distanceLeft }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Sheet details card -->
+  <div class="ride-details-sheet">
+    <div class="sheet-drag-handle"></div>
+
+    <!-- Passenger Info Header -->
+    <div class="passenger-card">
+      <div class="passenger-avatar-box">
+        <img [src]="ride.passengerPhoto || 'https://i.pravatar.cc/150?img=1'" alt="Passenger" class="passenger-avatar-img" />
+      </div>
+      <div class="passenger-meta">
+        <h3 class="passenger-name">{{ ride.passengerName }}</h3>
+        <span class="category-tag {{ ride.category }}">{{ ride.category | uppercase }}</span>
+      </div>
+      <ion-button fill="solid" color="success" shape="round" class="call-btn" (click)="callPassenger()">
+        <ion-icon name="call" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Route addresses -->
+    <div class="route-details-box">
+      <div class="route-point">
+        <div class="point-indicator pickup"></div>
+        <div class="point-text">
+          <span class="point-label">Pick up location</span>
+          <span class="point-address">{{ ride.pickupAddress }}</span>
+        </div>
+      </div>
+      <div class="route-line-connector"></div>
+      <div class="route-point">
+        <div class="point-indicator dropoff"></div>
+        <div class="point-text">
+          <span class="point-label">Drop off destination</span>
+          <span class="point-address">{{ ride.dropoffAddress }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fare Summary -->
+    <div class="fare-summary-row">
+      <span class="fare-label">Estimated Fare</span>
+      <span class="fare-val">{{ ride.estimatedFare | currency:'USD':'symbol' }}</span>
+    </div>
+
+    <!-- Phase Actions -->
+    <div class="actions-container">
+      <!-- Heading to pickup phase -->
+      <ng-container *ngIf="currentPhase === 'heading_to_pickup'">
+        <div class="en-route-status">
+          <ion-spinner name="dots" color="primary"></ion-spinner>
+          <span>Navigating to passenger pickup point...</span>
+        </div>
+        <ion-button expand="block" color="warning" class="action-btn" (click)="startTrip()">
+          <ion-icon name="location-outline" slot="start"></ion-icon>
+          Arrived at Pickup (Skip Nav)
+        </ion-button>
+      </ng-container>
+
+      <!-- Arrived at pickup phase -->
+      <ng-container *ngIf="currentPhase === 'arrived_at_pickup'">
+        <ion-button expand="block" color="primary" class="action-btn start-trip-btn" (click)="startTrip()">
+          <ion-icon name="navigate" slot="start"></ion-icon>
+          Start Trip to Destination
+        </ion-button>
+      </ng-container>
+
+      <!-- In progress phase -->
+      <ng-container *ngIf="currentPhase === 'trip_in_progress'">
+        <ion-button expand="block" color="success" class="action-btn" (click)="completeRide()">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Complete Ride
+        </ion-button>
+      </ng-container>
+
+      <!-- Completed phase -->
+      <ng-container *ngIf="currentPhase === 'completed'">
+        <ion-button expand="block" color="success" class="action-btn" (click)="completeRide()">
+          <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+          Done & Return to Dashboard
+        </ion-button>
+      </ng-container>
+
+      <!-- Cancel option (only if not completed) -->
+      <ion-button fill="clear" color="danger" expand="block" class="cancel-btn" (click)="cancelRide()" *ngIf="currentPhase !== 'completed'">
+        Cancel Ride
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

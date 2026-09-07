@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { VehicleCategoryInfo, VehicleCategory, DEFAULT_CATEGORIES } from '../models/vehicle.model';
 import { User, OwnerInfo } from '../models/user.model';
 import { RideRequest } from '../models/ride.model';
+import { StorageService } from './storage.service';
 
 export interface AdminSettings {
   categories: VehicleCategoryInfo[];
@@ -24,64 +25,93 @@ export interface AdminSettings {
   providedIn: 'root'
 })
 export class DataService {
+  private readonly SETTINGS_KEY = 'para_settings';
+  private readonly OWNERS_KEY = 'para_owners';
+  private readonly RIDES_KEY = 'para_rides';
+
   private settingsSubject = new BehaviorSubject<AdminSettings>(this.getDefaultSettings());
   public settings$: Observable<AdminSettings> = this.settingsSubject.asObservable();
 
-  private ownersSubject = new BehaviorSubject<OwnerInfo[]>([
-    {
-      userId: '2',
-      fullName: 'John Driver',
-      phone: '+1 (555) 123-4567',
-      email: 'owner@para.com',
-      carInfo: {
-        make: 'Toyota',
-        model: 'Camry',
-        year: 2024,
-        color: 'Silver',
-        plateNumber: 'ABC-1234',
-        category: 'comfort',
-        seats: 4
-      },
-      earnings: {
-        today: 185.50,
-        thisWeek: 1240.00,
-        thisMonth: 4850.00,
-        total: 28450.00
-      }
-    },
-    {
-      userId: '4',
-      fullName: 'Sarah Miller',
-      phone: '+1 (555) 234-5678',
-      email: 'sarah@para.com',
-      carInfo: {
-        make: 'Mercedes',
-        model: 'E-Class',
-        year: 2024,
-        color: 'Black',
-        plateNumber: 'XYZ-5678',
-        category: 'premium',
-        seats: 4
-      },
-      earnings: {
-        today: 320.00,
-        thisWeek: 2100.00,
-        thisMonth: 8200.00,
-        total: 52000.00
-      }
-    }
-  ]);
+  private ownersSubject = new BehaviorSubject<OwnerInfo[]>([]);
   public owners$: Observable<OwnerInfo[]> = this.ownersSubject.asObservable();
 
-  private usersSubject = new BehaviorSubject<User[]>([
-    { id: '1', username: 'passenger1', email: 'passenger@para.com', role: 'passenger', phone: '+1 (555) 111-1111' },
-    { id: '2', username: 'owner1', email: 'owner@para.com', role: 'owner', phone: '+1 (555) 222-2222' },
-    { id: '3', username: 'admin1', email: 'admin@para.com', role: 'administrator', phone: '+1 (555) 333-3333' },
-    { id: '4', username: 'sarah_owner', email: 'sarah@para.com', role: 'owner', phone: '+1 (555) 444-4444' }
-  ]);
+  private usersSubject = new BehaviorSubject<User[]>([]);
   public users$: Observable<User[]> = this.usersSubject.asObservable();
 
-  constructor() {}
+  constructor(private storageService: StorageService) {
+    this.initData();
+  }
+
+  private async initData() {
+    await this.storageService.initializeData();
+
+    // Load or initialize settings
+    const savedSettings = this.storageService.getItem<AdminSettings>(this.SETTINGS_KEY);
+    if (savedSettings) {
+      this.settingsSubject.next(savedSettings);
+    } else {
+      const defaultSettings = this.getDefaultSettings();
+      this.storageService.setItem(this.SETTINGS_KEY, defaultSettings);
+      this.settingsSubject.next(defaultSettings);
+    }
+
+    // Load or initialize owners
+    const savedOwners = this.storageService.getItem<OwnerInfo[]>(this.OWNERS_KEY);
+    if (savedOwners && savedOwners.length > 0) {
+      this.ownersSubject.next(savedOwners);
+    } else {
+      const defaultOwners: OwnerInfo[] = [
+        {
+          userId: '2',
+          fullName: 'John Driver',
+          phone: '+1 (555) 123-4567',
+          email: 'owner@para.com',
+          carInfo: {
+            make: 'Toyota',
+            model: 'Camry',
+            year: 2024,
+            color: 'Silver',
+            plateNumber: 'ABC-1234',
+            category: 'comfort',
+            seats: 4
+          },
+          earnings: {
+            today: 185.50,
+            thisWeek: 1240.00,
+            thisMonth: 4850.00,
+            total: 28450.00
+          }
+        },
+        {
+          userId: '4',
+          fullName: 'Sarah Miller',
+          phone: '+1 (555) 234-5678',
+          email: 'sarah@para.com',
+          carInfo: {
+            make: 'Mercedes',
+            model: 'E-Class',
+            year: 2024,
+            color: 'Black',
+            plateNumber: 'XYZ-5678',
+            category: 'premium',
+            seats: 4
+          },
+          earnings: {
+            today: 320.00,
+            thisWeek: 2100.00,
+            thisMonth: 8200.00,
+            total: 52000.00
+          }
+        }
+      ];
+      this.storageService.setItem(this.OWNERS_KEY, defaultOwners);
+      this.ownersSubject.next(defaultOwners);
+    }
+
+    // Load users from storage
+    const users = this.storageService.getUsersFromLocalStorage() || [];
+    this.usersSubject.next(users);
+  }
 
   private getDefaultSettings(): AdminSettings {
     return {
@@ -106,6 +136,7 @@ export class DataService {
   }
 
   updateSettings(settings: AdminSettings): void {
+    this.storageService.setItem(this.SETTINGS_KEY, settings);
     this.settingsSubject.next(settings);
   }
 
@@ -115,12 +146,16 @@ export class DataService {
 
   addOwner(owner: OwnerInfo): void {
     const current = this.ownersSubject.value;
-    this.ownersSubject.next([...current, owner]);
+    const updated = [...current, owner];
+    this.storageService.setItem(this.OWNERS_KEY, updated);
+    this.ownersSubject.next(updated);
   }
 
   removeOwner(userId: string): void {
     const current = this.ownersSubject.value;
-    this.ownersSubject.next(current.filter(o => o.userId !== userId));
+    const updated = current.filter(o => o.userId !== userId);
+    this.storageService.setItem(this.OWNERS_KEY, updated);
+    this.ownersSubject.next(updated);
   }
 
   updateOwner(owner: OwnerInfo): void {
@@ -128,35 +163,38 @@ export class DataService {
     const index = current.findIndex(o => o.userId === owner.userId);
     if (index !== -1) {
       current[index] = owner;
+      this.storageService.setItem(this.OWNERS_KEY, current);
       this.ownersSubject.next([...current]);
     }
   }
 
   getUsers(): User[] {
-    return this.usersSubject.value;
+    return this.storageService.getUsersFromLocalStorage() || [];
   }
 
   addUser(user: User): void {
-    const current = this.usersSubject.value;
-    this.usersSubject.next([...current, user]);
+    this.storageService.addUser(user);
+    this.usersSubject.next(this.storageService.getUsersFromLocalStorage() || []);
   }
 
   removeUser(userId: string): void {
-    const current = this.usersSubject.value;
-    this.usersSubject.next(current.filter(u => u.id !== userId));
+    const current = this.getUsers();
+    const updated = current.filter(u => u.id !== userId);
+    this.storageService.saveUsersToLocalStorage(updated);
+    this.usersSubject.next(updated);
   }
 
   updateUser(user: User): void {
-    const current = this.usersSubject.value;
+    const current = this.getUsers();
     const index = current.findIndex(u => u.id === user.id);
     if (index !== -1) {
       current[index] = user;
+      this.storageService.saveUsersToLocalStorage(current);
       this.usersSubject.next([...current]);
     }
   }
 
   getAllRides(): RideRequest[] {
-    // Return mock data
-    return [];
+    return this.storageService.getItem<RideRequest[]>(this.RIDES_KEY) || [];
   }
 }

@@ -10,38 +10,47 @@
 @import '@ionic/angular/css/text-transformation.css';
 @import '@ionic/angular/css/flex-utils.css';
 
+/* Import Leaflet CSS */
+@import 'leaflet/dist/leaflet.css';
+
 :root {
-  --ion-color-primary: #0066FF;
-  --ion-color-primary-rgb: 0,102,255;
+  /* Metallic Blue Palette */
+  --ion-color-primary: #2c3e50; /* Deep Metallic Blue */
+  --ion-color-primary-rgb: 44,62,80;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-shade: #005ae0;
-  --ion-color-primary-tint: #1a75ff;
+  --ion-color-primary-shade: #283747;
+  --ion-color-primary-tint: #3d536b;
 
-  --ion-color-secondary: #00C853;
-  --ion-color-secondary-rgb: 0,200,83;
+  --ion-color-secondary: #4ca1af; /* Steel Blue */
+  --ion-color-secondary-rgb: 76,161,175;
   --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-shade: #00b04a;
-  --ion-color-secondary-tint: #1ad16a;
+  --ion-color-secondary-shade: #45919b;
+  --ion-color-secondary-tint: #5caba3;
 
-  --ion-color-tertiary: #FF6D00;
-  --ion-color-tertiary-rgb: 255,109,0;
-  --ion-color-tertiary-contrast: #ffffff;
-  --ion-color-tertiary-shade: #e06000;
-  --ion-color-tertiary-tint: #ff7c1a;
+  --ion-color-tertiary: #bdc3c7; /* Silver/Chrome */
+  --ion-color-tertiary-rgb: 189,195,199;
+  --ion-color-tertiary-contrast: #2c3e50;
+  --ion-color-tertiary-shade: #b2b8b9;
+  --ion-color-tertiary-tint: #c2c7c8;
 
-  --ion-color-dark: #222428;
-  --ion-color-dark-rgb: 34,36,40;
+  --ion-color-dark: #1a252f;
+  --ion-color-dark-rgb: 26,37,47;
   --ion-color-dark-contrast: #ffffff;
-  --ion-color-dark-shade: #1e2023;
-  --ion-color-dark-tint: #383a3e;
+  --ion-color-dark-shade: #151d25;
+  --ion-color-dark-tint: #2a3a4a;
 
-  --ion-color-medium: #92949c;
-  --ion-color-medium-rgb: 146,148,156;
+  --ion-color-medium: #7f8c8d;
+  --ion-color-medium-rgb: 127,140,141;
 
-  --ion-color-light: #f4f5f8;
-  --ion-color-light-rgb: 244,245,248;
+  --ion-color-light: #ecf0f1;
+  --ion-color-light-rgb: 236,240,241;
 
-  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --ion-font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Custom Metallic Blue Variables */
+  --metallic-blue-gradient: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+  --metallic-blue-dark: #1a252f;
+  --metallic-silver: #ecf0f1;
 }
 
 * {
@@ -52,10 +61,34 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--ion-font-family);
+  background-color: var(--ion-color-dark);
 }
 
 ion-content {
-  --background: #ffffff;
+  --background: var(--ion-color-dark);
+  color: var(--metallic-silver);
+}
+
+/* Global overrides for a "Metallic" look */
+ion-toolbar {
+  --background: var(--ion-color-primary);
+  --color: white;
+  --border-color: var(--ion-color-tertiary);
+  border-bottom: 1px solid var(--ion-color-tertiary);
+}
+
+ion-button {
+  --border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+ion-card {
+  --background: #2c3e50;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .map-container {
@@ -69,21 +102,22 @@ ion-content {
   padding: 16px;
   margin: 8px 0;
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: #34495e;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   cursor: pointer;
   transition: all 0.2s ease;
   border: 2px solid transparent;
 }
 
 .category-card:hover {
-  border-color: var(--ion-color-primary);
-  box-shadow: 0 4px 16px rgba(0,102,255,0.12);
+  border-color: var(--ion-color-secondary);
+  box-shadow: 0 4px 16px rgba(76,161,175,0.2);
 }
 
 .category-card.selected {
-  border-color: var(--ion-color-primary);
-  background: #f0f7ff;
+  border-color: var(--ion-color-secondary);
+  background: #465d75;
 }
 
 .category-icon {
@@ -97,17 +131,19 @@ ion-content {
   font-size: 24px;
 }
 
-.category-icon.economy { background: #e8f5e9; color: #2e7d32; }
-.category-icon.comfort { background: #e3f2fd; color: #1565c0; }
-.category-icon.premium { background: #fff3e0; color: #e65100; }
-.category-icon.vanxl { background: #f3e5f5; color: #7b1fa2; }
+.category-icon.economy { background: #2ecc71; color: white; }
+.category-icon.comfort { background: #3498db; color: white; }
+.category-icon.premium { background: #f1c40f; color: #2c3e50; }
+.category-icon.vanxl { background: #9b59b6; color: white; }
 
 .dashboard-stat {
   text-align: center;
   padding: 16px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--ion-color-primary), #005ae0);
+  background: var(--metallic-blue-gradient);
   color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
 .dashboard-stat .value {
@@ -119,15 +155,17 @@ ion-content {
 .dashboard-stat .label {
   font-size: 12px;
   opacity: 0.9;
+  text-transform: uppercase;
 }
 
 .ride-request-card {
   padding: 16px;
   margin: 8px 0;
   border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border-left: 4px solid var(--ion-color-primary);
+  background: #34495e;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-left: 4px solid var(--ion-color-secondary);
 }
 
 .action-buttons {
@@ -152,12 +190,14 @@ ion-content {
   display: block;
   margin-bottom: 4px;
   font-weight: 500;
-  color: var(--ion-color-dark);
+  color: var(--metallic-silver);
 }
 
 .form-group ion-input,
 .form-group ion-select {
   --padding-start: 12px;
-  --background: #f5f5f5;
+  --background: #1a252f;
+  --color: white;
   border-radius: 8px;
+  border: 1px solid #465d75;
 }

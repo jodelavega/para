@@ -1,22 +1,22 @@
-﻿.ride-tracking { padding: 16px; }
-.map-placeholder { height: 200px; background: linear-gradient(180deg, #e8eaf6, #c5cae9); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 16px; }
-.map-placeholder ion-icon { font-size: 48px; margin-bottom: 8px; }
-.map-placeholder p { font-weight: 600; color: var(--ion-color-primary); }
-.ride-info-card { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.ride-tracking { padding: 16px; background: var(--ion-color-dark); min-height: 100%; }
+.map-placeholder { height: 220px; background: linear-gradient(135deg, #2c3e50, #1a252f); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1); }
+.map-placeholder ion-icon { font-size: 48px; margin-bottom: 8px; color: #4ca1af; }
+.map-placeholder p { font-weight: 600; color: #4ca1af; }
+.ride-info-card { background: #243342; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
 .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 24px; font-weight: 600; font-size: 14px; margin-bottom: 16px; }
-.status-badge.pending { background: #fff3e0; color: #e65100; }
-.status-badge.accepted { background: #e3f2fd; color: #1565c0; }
-.status-badge.arrived { background: #e8f5e9; color: #2e7d32; }
-.status-badge.in_progress { background: #e8f5e9; color: #2e7d32; }
-.status-badge.completed { background: #e8f5e9; color: #2e7d32; }
-.status-badge.cancelled { background: #fce4ec; color: #c62828; }
+.status-badge.pending { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+.status-badge.accepted { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+.status-badge.arrived { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.status-badge.in_progress { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.status-badge.completed { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.status-badge.cancelled { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
 .info-section { margin-bottom: 16px; }
-.info-row { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; }
-.pickup-dot { width: 10px; height: 10px; background: var(--ion-color-primary); border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-.dropoff-dot { width: 10px; height: 10px; background: var(--ion-color-dark); border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-.driver-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8f9fa; border-radius: 12px; margin-bottom: 16px; }
-.driver-avatar ion-icon { font-size: 40px; color: var(--ion-color-primary); }
-.driver-name { font-weight: 600; }
-.car-model { font-size: 13px; color: var(--ion-color-medium); }
-.ride-fare { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid #f0f0f0; margin-bottom: 16px; }
-.ride-fare .amount { font-size: 24px; font-weight: 700; }
+.info-row { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; color: #ffffff; }
+.pickup-dot { width: 10px; height: 10px; background: #4ca1af; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.dropoff-dot { width: 10px; height: 10px; background: #bdc3c7; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.driver-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: #1a252f; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08); }
+.driver-avatar ion-icon { font-size: 40px; color: #4ca1af; }
+.driver-name { font-weight: 600; color: #ffffff; }
+.car-model { font-size: 13px; color: #bdc3c7; }
+.ride-fare { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+.ride-fare .amount { font-size: 24px; font-weight: 700; color: #ffffff; }

@@ -10,7 +10,7 @@
   <div class="login-container">
     <div class="welcome-section">
       <div class="logo-icon">
-        <ion-icon name="car-sport-outline" color="primary" size="large"></ion-icon>
+        <ion-icon name="car-sport" class="app-car-icon"></ion-icon>
       </div>
       <h1>Welcome to Para</h1>
       <p>Choose your role to get started</p>
@@ -20,14 +20,20 @@
       <!-- Role Selection -->
       <ion-list lines="none" class="role-selector">
         <ion-radio-group formControlName="role" (ionChange)="onRoleChange()">
-          <ion-item class="role-item" *ngFor="let role of roles">
-            <ion-radio [value]="role.value" slot="start">
-              <ion-icon [name]="role.icon" slot="label"></ion-icon>
-            </ion-radio>
+          <ion-item 
+            class="role-item" 
+            *ngFor="let role of roles"
+            [class.selected]="loginForm.get('role')?.value === role.value"
+            (click)="loginForm.get('role')?.setValue(role.value); onRoleChange()"
+          >
+            <ion-radio [value]="role.value" slot="start" aria-label="Role selector"></ion-radio>
             <ion-label>
               <div class="role-label">
-                <ion-icon [name]="role.icon" slot="start"></ion-icon>
-                <span>{{ role.label }}</span>
+                <ion-icon [name]="role.icon" class="role-icon"></ion-icon>
+                <span class="role-title">{{ role.label }}</span>
+                <span class="check-mark-pill" *ngIf="loginForm.get('role')?.value === role.value">
+                  <ion-icon name="checkmark-circle"></ion-icon> SELECTED
+                </span>
               </div>
               <p class="role-description">{{ role.description }}</p>
             </ion-label>
@@ -68,7 +74,7 @@
       </ion-button>
 
       <div class="demo-info">
-        <p><ion-icon name="information-circle-outline"></ion-icon> Demo: use any username, select role</p>
+        <p><ion-icon name="information-circle-outline"></ion-icon> Demo: select role & click Sign In</p>
       </div>
     </form>
   </div>

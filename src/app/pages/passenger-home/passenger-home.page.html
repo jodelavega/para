@@ -1,4 +1,4 @@
-﻿<ion-header mode="ios" class="ion-no-border">
+<ion-header mode="ios" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
@@ -15,19 +15,15 @@
 </ion-header>
 
 <ion-content class="passenger-content">
-  <div class="map-wrapper" #mapContainer>
-    <div class="map-placeholder">
-      <div class="map-overlay">
-        <div class="current-location-marker">
-          <div class="marker-pulse"></div>
-          <div class="marker-dot"></div>
-        </div>
-      </div>
-      <div class="map-info">
-        <div class="location-badge">
-          <ion-icon name="location-outline"></ion-icon>
-          <span>Current Location: {{ currentAddress || 'Detecting...' }}</span>
-        </div>
+  <div class="map-wrapper">
+    <!-- Real Leaflet Map Container -->
+    <div id="map" style="width: 100%; height: 100%; z-index: 1;"></div>
+
+    <!-- Floating location badge -->
+    <div class="map-info" style="position: absolute; top: 16px; left: 16px; right: 16px; z-index: 1000; pointer-events: none;">
+      <div class="location-badge" style="background: rgba(255,255,255,0.95); padding: 8px 16px; border-radius: 24px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 2px 8px rgba(0,0,0,0.1); backdrop-filter: blur(10px); pointer-events: auto;">
+        <ion-icon name="location-outline" style="color: var(--ion-color-primary); font-size: 16px;"></ion-icon>
+        <span>Current Location: {{ currentAddress || "Detecting..." }}</span>
       </div>
     </div>
   </div>
@@ -148,6 +144,52 @@
           <p>{{ getStatusLabel(activeRide.status) }}</p>
         </div>
 
+        <!-- Driver ETA and Distance Info (shown when driver is heading to pickup) -->
+        <div class="driver-eta-section" *ngIf="activeRide.status === 'accepted'">
+          <div class="driver-eta-card">
+            <div class="eta-metric">
+              <ion-icon name="time-outline" color="success"></ion-icon>
+              <div class="eta-detail">
+                <span class="eta-label">Time remaining</span>
+                <span class="eta-value">{{ driverTimeRemaining }}</span>
+              </div>
+            </div>
+            <div class="eta-metric">
+              <ion-icon name="navigate-outline" color="tertiary"></ion-icon>
+              <div class="eta-detail">
+                <span class="eta-label">Distance to pickup</span>
+                <span class="eta-value">{{ driverDistance }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="driver-progress-bar-container">
+            <div class="driver-progress-bar">
+              <div class="driver-progress-fill" [style.width.%]="driverProgressPercent"></div>
+            </div>
+            <span class="driver-progress-text">{{ driverProgressPercent }}%</span>
+          </div>
+
+          <!-- Driver Info Card -->
+          <div class="driver-info-card" *ngIf="activeRide.ownerInfo">
+            <div class="driver-avatar-section">
+              <img [src]="activeRide.ownerInfo.photo || 'https://i.pravatar.cc/150?img=12'" alt="Driver" class="driver-avatar-img" />
+            </div>
+            <div class="driver-details-section">
+              <div class="driver-name">{{ activeRide.ownerInfo.name }}</div>
+              <div class="driver-car-info">{{ activeRide.ownerInfo.carModel }} · {{ activeRide.ownerInfo.carPlate }}</div>
+              <div class="driver-rating" *ngIf="activeRide.ownerInfo.rating">
+                <ion-icon name="star" color="warning"></ion-icon>
+                <span>{{ activeRide.ownerInfo.rating }}</span>
+              </div>
+            </div>
+            <ion-button fill="clear" color="primary" class="call-driver-btn" (click)="callDriver()">
+              <ion-icon name="call-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
         <div class="ride-details">
           <div class="ride-detail-row">
             <div class="pickup-dot"></div>
@@ -164,7 +206,7 @@
           <span class="fare-value">{{ activeRide.estimatedFare | currency:'USD':'symbol' }}</span>
         </div>
 
-        <ion-button fill="outline" color="danger" expand="block" (click)="cancelRide()" *ngIf="activeRide.status === 'pending'">
+        <ion-button fill="outline" color="danger" expand="block" (click)="cancelRide()" *ngIf="activeRide.status === 'pending' || activeRide.status === 'accepted'">
           Cancel Ride
         </ion-button>
       </div>
@@ -180,3 +222,5 @@
     </ion-button>
   </ion-toolbar>
 </ion-footer>
+
+

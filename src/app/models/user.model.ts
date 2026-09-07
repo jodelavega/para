@@ -3,10 +3,12 @@ export type UserRole = 'passenger' | 'owner' | 'administrator';
 export interface User {
   id: string;
   username: string;
+  password?: string;
   email: string;
   role: UserRole;
   photoUrl?: string;
   phone?: string;
+  createdAt?: string;
 }
 
 export type VehicleCategoryType = 'economy' | 'comfort' | 'premium' | 'vanxl';

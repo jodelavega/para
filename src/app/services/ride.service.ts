@@ -115,19 +115,42 @@ export class RideService {
     return request;
   }
 
-  acceptRide(rideId: string, ownerId: string): void {
+  acceptRide(rideId: string, ownerId: string, ownerLocation?: Location, ownerInfo?: any): void {
     const requests = this.rideRequestsSubject.value;
     const index = requests.findIndex(r => r.id === rideId);
     if (index !== -1) {
       requests[index].status = 'accepted';
       requests[index].ownerId = ownerId;
+
+      if (ownerLocation) {
+        requests[index].ownerLocation = ownerLocation;
+      } else if (!requests[index].ownerLocation) {
+        const pickup = requests[index].pickupLocation;
+        requests[index].ownerLocation = {
+          lat: Number((pickup.lat - 0.012).toFixed(6)),
+          lng: Number((pickup.lng - 0.015).toFixed(6)),
+          address: 'Owner Current Location'
+        };
+      }
+
+      if (ownerInfo) {
+        requests[index].ownerInfo = ownerInfo;
+      } else if (!requests[index].ownerInfo) {
+        requests[index].ownerInfo = {
+          name: 'John Driver',
+          phone: '+1 (555) 123-4567',
+          carModel: 'Toyota Camry',
+          carPlate: 'ABC-1234',
+          carColor: 'Silver',
+          photo: 'https://i.pravatar.cc/150?img=12',
+          rating: 4.9
+        };
+      }
+
       this.rideRequestsSubject.next([...requests]);
 
-      // Update active ride if this is the one
-      const active = this.activeRideSubject.value;
-      if (active && active.id === rideId) {
-        this.activeRideSubject.next({ ...requests[index] });
-      }
+      // Set active ride to this accepted ride
+      this.activeRideSubject.next({ ...requests[index] });
     }
   }
 
@@ -154,6 +177,10 @@ export class RideService {
 
   getPendingRequests(): RideRequest[] {
     return this.rideRequestsSubject.value.filter(r => r.status === 'pending');
+  }
+
+  getRideById(id: string): RideRequest | undefined {
+    return this.rideRequestsSubject.value.find(r => r.id === id);
   }
 
   cancelRide(rideId: string): void {

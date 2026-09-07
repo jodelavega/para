@@ -16,6 +16,16 @@ export interface RideRequest {
   status: RideStatus;
   createdAt: Date;
   ownerId?: string;
+  ownerLocation?: Location;
+  ownerInfo?: {
+    name: string;
+    phone: string;
+    carModel: string;
+    carPlate: string;
+    carColor: string;
+    photo?: string;
+    rating?: number;
+  };
 }
 
 export interface Location {

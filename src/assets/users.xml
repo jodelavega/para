@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+  <user>
+    <id>1</id>
+    <username>passenger1</username>
+    <password>pass123</password>
+    <email>passenger@para.com</email>
+    <role>passenger</role>
+    <phone>+1 (555) 111-1111</phone>
+    <createdAt>2026-01-01T08:00:00.000Z</createdAt>
+  </user>
+  <user>
+    <id>2</id>
+    <username>owner1</username>
+    <password>owner123</password>
+    <email>owner@para.com</email>
+    <role>owner</role>
+    <phone>+1 (555) 222-2222</phone>
+    <createdAt>2026-01-02T09:30:00.000Z</createdAt>
+  </user>
+  <user>
+    <id>3</id>
+    <username>admin1</username>
+    <password>admin123</password>
+    <email>admin@para.com</email>
+    <role>administrator</role>
+    <phone>+1 (555) 333-3333</phone>
+    <createdAt>2026-01-03T10:15:00.000Z</createdAt>
+  </user>
+  <user>
+    <id>4</id>
+    <username>sarah_owner</username>
+    <password>sarah123</password>
+    <email>sarah@para.com</email>
+    <role>owner</role>
+    <phone>+1 (555) 444-4444</phone>
+    <createdAt>2026-01-04T11:00:00.000Z</createdAt>
+  </user>
+</users>

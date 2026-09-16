@@ -1,1 +1,0 @@
-{"ast":null,"code":"export const RIDE_STATUS_LABELS = {\n  pending: 'Looking for a driver',\n  accepted: 'Driver is on the way',\n  arrived: 'Driver has arrived',\n  in_progress: 'On the way',\n  completed: 'Completed',\n  cancelled: 'Cancelled'\n};","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

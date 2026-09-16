@@ -6,3 +6,6 @@ resources/
 .DS_Store
 Thumbs.db
 capacitor-cordova-android-plugins/
+.angular/
+.vscode/
+%USERPROFILE%.git-credentials

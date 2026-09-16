@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AlertController, ToastController } from "@ionic/angular";
 import { Subscription } from "rxjs";
-import * as L from "leaflet";
+import { GoogleMapsService } from "../../services/google-maps.service";
 import { RideService } from "../../services/ride.service";
 import { AuthService } from "../../services/auth.service";
 import { RideRequest, RideStatus } from "../../models/ride.model";
@@ -20,19 +20,20 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
   timeLeft: string = "Calculating...";
   currentPhase: "heading_to_pickup" | "arrived_at_pickup" | "trip_in_progress" | "completed" = "heading_to_pickup";
 
-  private map!: L.Map;
-  private driverMarker?: L.Marker;
-  private pickupMarker?: L.Marker;
-  private dropoffMarker?: L.Marker;
-  private routePolyline?: L.Polyline;
+  private map!: google.maps.Map;
+  private driverMarker?: google.maps.Marker;
+  private pickupMarker?: google.maps.Marker;
+  private dropoffMarker?: google.maps.Marker;
+  private routePolyline?: google.maps.Polyline;
 
   private animationFrameId?: number;
   private subscriptions: Subscription[] = [];
-  private driverCurrentPos: [number, number] = [0, 0];
+  private driverCurrentPos: { lat: number; lng: number } = { lat: 0, lng: 0 };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private googleMapsService: GoogleMapsService,
     private rideService: RideService,
     private authService: AuthService,
     private alertController: AlertController,
@@ -75,9 +76,6 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
       cancelAnimationFrame(this.animationFrameId);
     }
     this.subscriptions.forEach((s) => s.unsubscribe());
-    if (this.map) {
-      this.map.remove();
-    }
   }
 
   private updatePhaseFromStatus(status: RideStatus) {
@@ -101,112 +99,81 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
 
     const pickupLat = this.ride.pickupLocation.lat;
     const pickupLng = this.ride.pickupLocation.lng;
+    const pickupCoords = this.googleMapsService.createLatLng(pickupLat, pickupLng);
 
     const driverStartLat = pickupLat - 0.012;
     const driverStartLng = pickupLng - 0.015;
-    this.driverCurrentPos = [driverStartLat, driverStartLng];
+    this.driverCurrentPos = { lat: driverStartLat, lng: driverStartLng };
+    const startCoords = this.googleMapsService.createLatLng(driverStartLat, driverStartLng);
 
     const mapEl = document.getElementById("owner-map");
     if (!mapEl) return;
 
-    this.map = L.map("owner-map", {
-      zoomControl: false,
-    }).setView([pickupLat, pickupLng], 14);
+    this.map = this.googleMapsService.initMap(mapEl, pickupCoords, 14);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-      subdomains: "abcd",
-      maxZoom: 19,
-    }).addTo(this.map);
-
-    const pickupIcon = L.divIcon({
-      className: "custom-pickup-pin",
-      html: `
-        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; width: 34px; height: 34px; background: #0066FF; opacity: 0.25; border-radius: 50%;"></div>
-          <div style="width: 16px; height: 16px; background: #0066FF; border: 3px solid white; border-radius: 50%; z-index: 2; box-shadow: 0 2px 8px rgba(0,102,255,0.5);"></div>
-        </div>
-      `,
-      iconSize: [34, 34],
-      iconAnchor: [17, 17],
-    });
-
-    this.pickupMarker = L.marker([pickupLat, pickupLng], { icon: pickupIcon })
-      .addTo(this.map)
-      .bindPopup(`<b>Pickup:</b> ${this.ride.pickupAddress}`);
+    const pickupIcon = this.googleMapsService.addMarker(
+      this.map,
+      pickupCoords,
+      {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#0066FF',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+        scale: 10
+      }
+    );
+    this.pickupMarker = pickupIcon;
 
     const dropoffLat = this.ride.dropoffLocation.lat;
     const dropoffLng = this.ride.dropoffLocation.lng;
-    const dropoffIcon = L.divIcon({
-      className: "custom-dropoff-pin",
-      html: `
-        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-          <div style="width: 16px; height: 16px; background: #FF4757; border: 3px solid white; border-radius: 4px; transform: rotate(45deg); z-index: 2; box-shadow: 0 2px 8px rgba(255,71,87,0.5);"></div>
-        </div>
-      `,
-      iconSize: [34, 34],
-      iconAnchor: [17, 17],
+    const dropoffCoords = this.googleMapsService.createLatLng(dropoffLat, dropoffLng);
+    this.dropoffMarker = this.googleMapsService.addMarker(this.map, dropoffCoords, {
+      path: google.maps.SymbolPath.CIRCLE,
+      fillColor: '#FF4757',
+      fillOpacity: 1,
+      strokeColor: '#ffffff',
+      strokeWeight: 2,
+      scale: 10
     });
 
-    this.dropoffMarker = L.marker([dropoffLat, dropoffLng], { icon: dropoffIcon })
-      .addTo(this.map)
-      .bindPopup(`<b>Destination:</b> ${this.ride.dropoffAddress}`);
+    const carIcon = this.googleMapsService.addMarker(
+      this.map,
+      startCoords,
+      {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#10b981',
+        fillOpacity: 0.9,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+        scale: 12
+      }
+    );
+    this.driverMarker = carIcon;
 
-    const carIconHtml = `
-      <div class="animated-car-marker" style="
-        width: 44px;
-        height: 44px;
-        background: linear-gradient(135deg, #10b981, #059669);
-        border: 3px solid #ffffff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
-        color: white;
-      ">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5C5.84 5 5.28 5.42 5.08 6.01L3 12V20C3 20.55 3.45 21 4 21H5C5.55 21 6 20.55 6 20V19H18V20C18 20.55 18.45 21 19 21H20C20.55 21 21 20.55 21 20V12L18.92 6.01ZM6.5 16C5.67 16 5 15.33 5 14.5C5 13.67 5.67 13 6.5 13C7.33 13 8 13.67 8 14.5C8 15.33 7.33 16 6.5 16ZM17.5 16C16.67 16 16 15.33 16 14.5C16 13.67 16.67 13 17.5 13C18.33 13 19 13.67 19 14.5C19 15.33 18.33 16 17.5 16ZM5 11L6.5 6.5H17.5L19 11H5Z" fill="currentColor"/>
-        </svg>
-      </div>
-    `;
-
-    const carIcon = L.divIcon({
-      className: "driver-car-div-icon",
-      html: carIconHtml,
-      iconSize: [44, 44],
-      iconAnchor: [22, 22],
-    });
-
-    this.driverMarker = L.marker([driverStartLat, driverStartLng], { icon: carIcon }).addTo(this.map);
-
-    const routeCoords: L.LatLngExpression[] = [
-      [driverStartLat, driverStartLng],
-      [pickupLat, pickupLng],
+    const routeCoords: google.maps.LatLngLiteral[] = [
+      startCoords,
+      pickupCoords,
     ];
-    this.routePolyline = L.polyline(routeCoords, {
-      color: "#10b981",
-      weight: 5,
-      opacity: 0.85,
-      dashArray: "8, 6",
-    }).addTo(this.map);
+    this.routePolyline = this.googleMapsService.addPolyline(this.map, routeCoords, "#10b981", 5, 0.85, [8, 6]);
 
-    const bounds = L.latLngBounds([
-      [driverStartLat, driverStartLng],
-      [pickupLat, pickupLng],
-      [dropoffLat, dropoffLng],
-    ]);
-    this.map.fitBounds(bounds, { padding: [60, 60] });
+    const bounds = this.googleMapsService.createLatLngBounds();
+    this.googleMapsService.extendBounds(bounds, startCoords);
+    this.googleMapsService.extendBounds(bounds, pickupCoords);
+    this.googleMapsService.extendBounds(bounds, dropoffCoords);
+    this.googleMapsService.fitBounds(this.map, bounds);
 
-    this.startVehicleAnimationToPickup([driverStartLat, driverStartLng], [pickupLat, pickupLng], 8000);
+    this.startVehicleAnimationToPickup(startCoords, pickupCoords, 8000);
   }
 
   private startVehicleAnimationToPickup(
-    start: [number, number],
-    end: [number, number],
+    start: { lat: number; lng: number },
+    end: { lat: number; lng: number },
     durationMs: number
   ) {
-    const totalDistanceKm = this.calculateDistance(start[0], start[1], end[0], end[1]);
+    const startCoords = this.googleMapsService.createLatLng(start.lat, start.lng);
+    const endCoords = this.googleMapsService.createLatLng(end.lat, end.lng);
+    const totalDistanceKm = this.calculateDistance(start.lat, start.lng, end.lat, end.lng);
     const totalDurationMins = Math.max(1, Math.round(totalDistanceKm * 2.5 + 2));
 
     this.distanceLeft = `${totalDistanceKm.toFixed(1)} km`;
@@ -222,12 +189,13 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
         ? 2 * progress * progress
         : -1 + (4 - 2 * progress) * progress;
 
-      const currentLat = start[0] + (end[0] - start[0]) * easeProgress;
-      const currentLng = start[1] + (end[1] - start[1]) * easeProgress;
-      this.driverCurrentPos = [currentLat, currentLng];
+      const currentLat = start.lat + (end.lat - start.lat) * easeProgress;
+      const currentLng = start.lng + (end.lng - start.lng) * easeProgress;
+      this.driverCurrentPos = { lat: currentLat, lng: currentLng };
 
+      const currentCoords = this.googleMapsService.createLatLng(currentLat, currentLng);
       if (this.driverMarker) {
-        this.driverMarker.setLatLng([currentLat, currentLng]);
+        this.googleMapsService.setMarkerPosition(this.driverMarker, currentCoords);
       }
 
       const remainingDist = (1 - easeProgress) * totalDistanceKm;
@@ -242,10 +210,7 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (this.routePolyline) {
-        this.routePolyline.setLatLngs([
-          [currentLat, currentLng],
-          [end[0], end[1]],
-        ]);
+        this.googleMapsService.setPolylinePath(this.routePolyline, [currentCoords, endCoords]);
       }
 
       if (progress < 1) {
@@ -296,8 +261,11 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
     const dropoffLat = this.ride.dropoffLocation.lat;
     const dropoffLng = this.ride.dropoffLocation.lng;
 
+    const pickupCoords = this.googleMapsService.createLatLng(pickupLat, pickupLng);
+    const dropoffCoords = this.googleMapsService.createLatLng(dropoffLat, dropoffLng);
+
     if (this.routePolyline) {
-      this.routePolyline.setStyle({ color: "#0066FF" });
+      this.routePolyline.setOptions({ strokeColor: "#0066FF" });
     }
 
     const tripDist = this.ride.distance || this.calculateDistance(pickupLat, pickupLng, dropoffLat, dropoffLng);
@@ -316,8 +284,9 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
       const currentLat = pickupLat + (dropoffLat - pickupLat) * easeProgress;
       const currentLng = pickupLng + (dropoffLng - pickupLng) * easeProgress;
 
+      const currentCoords = this.googleMapsService.createLatLng(currentLat, currentLng);
       if (this.driverMarker) {
-        this.driverMarker.setLatLng([currentLat, currentLng]);
+        this.googleMapsService.setMarkerPosition(this.driverMarker, currentCoords);
       }
 
       const remainingDist = (1 - easeProgress) * tripDist;
@@ -332,10 +301,7 @@ export class OwnerRidePage implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (this.routePolyline) {
-        this.routePolyline.setLatLngs([
-          [currentLat, currentLng],
-          [dropoffLat, dropoffLng],
-        ]);
+        this.googleMapsService.setPolylinePath(this.routePolyline, [currentCoords, dropoffCoords]);
       }
 
       if (progress < 1) {

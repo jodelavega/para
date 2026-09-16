@@ -42,7 +42,7 @@ export class OwnerDashboardPage implements OnInit {
     const user = this.authService.currentUser;
     if (user) {
       const ownerInfo = this.authService.getOwnerInfo();
-      this.rideService.acceptRide(rideId, user.id, this.ownerLocation, {
+      this.rideService.acceptRide(rideId, user.id, this.ownerLocation?? undefined, {
         name: ownerInfo.fullName,
         phone: ownerInfo.phone,
         carModel: `${ownerInfo.carInfo.make} ${ownerInfo.carInfo.model}`,

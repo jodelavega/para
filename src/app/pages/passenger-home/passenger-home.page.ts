@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { AlertController } from "@ionic/angular";
 import { ToastController } from "@ionic/angular";
 import { Subscription } from "rxjs";
-import * as L from "leaflet";
+import { GoogleMapsService } from "../../services/google-maps.service";
 import { AuthService } from "../../services/auth.service";
 import { PricingService } from "../../services/pricing.service";
 import { RideService } from "../../services/ride.service";
@@ -40,16 +40,17 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
   driverTimeRemaining: string = "Calculating...";
   driverProgressPercent: number = 0;
 
-  private map!: L.Map;
-  private pickupMarker?: L.Marker;
-  private destinationMarker?: L.Marker;
-  private driverMarker?: L.Marker;
-  private routePolyline?: L.Polyline;
-  private driverApproachPolyline?: L.Polyline;
+  private map!: google.maps.Map;
+  private pickupMarker?: google.maps.Marker;
+  private destinationMarker?: google.maps.Marker;
+  private driverMarker?: google.maps.Marker;
+  private routePolyline?: google.maps.Polyline;
+  private driverApproachPolyline?: google.maps.Polyline;
   private animationFrameId?: number;
   private subscriptions: Subscription[] = [];
 
   constructor(
+    private googleMapsService: GoogleMapsService,
     private authService: AuthService,
     private pricingService: PricingService,
     private rideService: RideService,
@@ -90,41 +91,17 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
       cancelAnimationFrame(this.animationFrameId);
     }
     this.subscriptions.forEach(s => s.unsubscribe());
-    if (this.map) {
-      this.map.remove();
-    }
   }
 
   private initMap() {
-    const lat = 40.7484;
-    const lng = -73.9856;
+    const mapEl = document.getElementById("map");
+    if (!mapEl) return;
 
-    const mapElement = document.getElementById("map");
-    if (!mapElement) return;
+    const coords = this.googleMapsService.createLatLng(40.7484, -73.9856);
+    this.map = this.googleMapsService.initMap(mapEl, coords, 14);
 
-    this.map = L.map("map", {
-      zoomControl: false
-    }).setView([lat, lng], 14);
-
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      subdomains: "abcd",
-      maxZoom: 19
-    }).addTo(this.map);
-
-    const pickupIcon = L.divIcon({
-      className: "custom-pickup-pin",
-      html: `
-        <div style="position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; width: 30px; height: 30px; background: #0066FF; opacity: 0.3; border-radius: 50%;"></div>
-          <div style="width: 14px; height: 14px; background: #0066FF; border: 3px solid white; border-radius: 50%; z-index: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
-        </div>
-      `,
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-
-    this.pickupMarker = L.marker([lat, lng], { icon: pickupIcon }).addTo(this.map);
+    const pickupIcon = this.googleMapsService.addMarker(this.map, coords);
+    this.pickupMarker = pickupIcon;
   }
 
   private loadCurrentLocation() {
@@ -157,53 +134,53 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   selectDestination(result: SearchResult) {
-    const pickup: Location = { lat: 40.7484, lng: -73.9856, address: this.currentAddress };
+    const pickupCoords = this.googleMapsService.createLatLng(40.7484, -73.9856);
+    const destCoords = this.googleMapsService.createLatLng(result.lat, result.lng);
     this.destinationLocation = { lat: result.lat, lng: result.lng, address: result.address };
     this.destination = result.name;
     this.distance = Math.round(this.pricingService.calculateDistance(
-      pickup.lat, pickup.lng, result.lat, result.lng) * 10) / 10;
+      40.7484, -73.9856, result.lat, result.lng) * 10) / 10;
     this.duration = Math.round(this.distance * 5);
     this.closeSearch();
     this.showCategories = true;
 
-    this.updateMapRoute(pickup, this.destinationLocation);
+    this.updateMapRoute(pickupCoords, destCoords);
   }
 
-  private updateMapRoute(pickup: Location, destination: Location) {
+  private updateMapRoute(pickup: { lat: number; lng: number }, destination: { lat: number; lng: number }) {
     if (!this.map) return;
 
-    if (this.destinationMarker) this.destinationMarker.remove();
-    if (this.routePolyline) this.routePolyline.remove();
+    const pickupCoords = this.googleMapsService.createLatLng(pickup.lat, pickup.lng);
+    const destCoords = this.googleMapsService.createLatLng(destination.lat, destination.lng);
 
-    const dropoffIcon = L.divIcon({
-      className: "custom-dropoff-pin",
-      html: `
-        <div style="display: flex; align-items: center; justify-content: center;">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#222428"/>
-          </svg>
-        </div>
-      `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32]
-    });
+    if (this.destinationMarker) this.destinationMarker.setMap(null);
+    if (this.routePolyline) this.routePolyline.setMap(null);
 
-    this.destinationMarker = L.marker([destination.lat, destination.lng], { icon: dropoffIcon }).addTo(this.map);
+    const dropoffIcon = this.googleMapsService.addMarker(
+      this.map,
+      destCoords,
+      {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#222428',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+        scale: 10
+      }
+    );
+    this.destinationMarker = dropoffIcon;
 
-    const points: L.LatLngExpression[] = [
-      [pickup.lat, pickup.lng],
-      [destination.lat, destination.lng]
+    const points: google.maps.LatLngLiteral[] = [
+      pickupCoords,
+      destCoords
     ];
 
-    this.routePolyline = L.polyline(points, {
-      color: "#0066FF",
-      weight: 4,
-      opacity: 0.8,
-      dashArray: "6, 8"
-    }).addTo(this.map);
+    this.routePolyline = this.googleMapsService.addPolyline(this.map, points, "#0066FF", 4, 0.8, [6, 8]);
 
-    const bounds = L.latLngBounds(points);
-    this.map.fitBounds(bounds, { padding: [40, 40] });
+    const bounds = this.googleMapsService.createLatLngBounds();
+    this.googleMapsService.extendBounds(bounds, pickupCoords);
+    this.googleMapsService.extendBounds(bounds, destCoords);
+    this.googleMapsService.fitBounds(this.map, bounds);
   }
 
   setQuickDestination(place: string) {
@@ -233,10 +210,13 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedCategory || !this.destinationLocation) return;
     const user = this.authService.currentUser;
     if (!user) { this.router.navigate(["/login"]); return; }
-    const pickup: Location = { lat: 40.7484, lng: -73.9856, address: this.currentAddress };
+    const pickup = this.googleMapsService.createLatLng(40.7484, -73.9856);
+    const dest = this.googleMapsService.createLatLng(this.destinationLocation.lat, this.destinationLocation.lng);
     const fare = this.getFare(this.selectedCategory);
     const ride = this.rideService.createRideRequest(
-      user.id, user.username, pickup, this.destinationLocation,
+      user.id, user.username,
+      { lat: 40.7484, lng: -73.9856, address: this.currentAddress },
+      this.destinationLocation,
       this.selectedCategory.id, fare, this.distance, this.duration
     );
     setTimeout(() => {
@@ -255,9 +235,11 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
 
     const pickupLat = ride.pickupLocation.lat;
     const pickupLng = ride.pickupLocation.lng;
+    const pickupCoords = this.googleMapsService.createLatLng(pickupLat, pickupLng);
 
     const startLat = ride.ownerLocation?.lat ?? (pickupLat - 0.012);
     const startLng = ride.ownerLocation?.lng ?? (pickupLng - 0.015);
+    const startCoords = this.googleMapsService.createLatLng(startLat, startLng);
 
     const totalDistKm = this.calculateDistance(startLat, startLng, pickupLat, pickupLng);
     const totalMins = Math.max(1, Math.round(totalDistKm * 2.5 + 2));
@@ -266,48 +248,33 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
     this.driverTimeRemaining = `${totalMins} mins`;
     this.driverProgressPercent = 0;
 
-    if (this.driverMarker) { this.driverMarker.remove(); }
-    if (this.driverApproachPolyline) { this.driverApproachPolyline.remove(); }
+    if (this.driverMarker) { this.driverMarker.setMap(null); }
+    if (this.driverApproachPolyline) { this.driverApproachPolyline.setMap(null); }
 
-    const carIconHtml = `
-      <div class="animated-car-marker" style="
-        position: relative; width: 44px; height: 44px;
-        background: linear-gradient(135deg, #10b981, #059669);
-        border: 3px solid #ffffff; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
-        color: white;
-      ">
-        <div style="
-          position: absolute; width: 52px; height: 52px;
-          border-radius: 50%; border: 2px solid rgba(16, 185, 129, 0.5);
-          animation: carPulse 1.8s infinite ease-out;
-        "></div>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5C5.84 5 5.28 5.42 5.08 6.01L3 12V20C3 20.55 3.45 21 4 21H5C5.55 21 6 20.55 6 20V19H18V20C18 20.55 18.45 21 19 21H20C20.55 21 21 20.55 21 20V12L18.92 6.01ZM6.5 16C5.67 16 5 15.33 5 14.5C5 13.67 5.67 13 6.5 13C7.33 13 8 13.67 8 14.5C8 15.33 7.33 16 6.5 16ZM17.5 16C16.67 16 16 15.33 16 14.5C16 13.67 16.67 13 17.5 13C18.33 13 19 13.67 19 14.5C19 15.33 18.33 16 17.5 16ZM5 11L6.5 6.5H17.5L19 11H5Z" fill="currentColor"/>
-        </svg>
-      </div>
-    `;
+    const carIcon = this.googleMapsService.addMarker(
+      this.map,
+      startCoords,
+      {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: '#10b981',
+        fillOpacity: 0.9,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+        scale: 12
+      }
+    );
+    this.driverMarker = carIcon;
 
-    const carIcon = L.divIcon({
-      className: "driver-car-div-icon",
-      html: carIconHtml,
-      iconSize: [44, 44],
-      iconAnchor: [22, 22]
-    });
+    const routeCoords: google.maps.LatLngLiteral[] = [
+      startCoords,
+      pickupCoords
+    ];
+    this.driverApproachPolyline = this.googleMapsService.addPolyline(this.map, routeCoords, "#10b981", 5, 0.85, [8, 6]);
 
-    this.driverMarker = L.marker([startLat, startLng], { icon: carIcon }).addTo(this.map);
-
-    this.driverApproachPolyline = L.polyline([
-      [startLat, startLng],
-      [pickupLat, pickupLng]
-    ], { color: "#10b981", weight: 5, opacity: 0.85, dashArray: "8, 6" }).addTo(this.map);
-
-    const bounds = L.latLngBounds([
-      [startLat, startLng],
-      [pickupLat, pickupLng]
-    ]);
-    this.map.fitBounds(bounds, { padding: [50, 50] });
+    const bounds = this.googleMapsService.createLatLngBounds();
+    this.googleMapsService.extendBounds(bounds, startCoords);
+    this.googleMapsService.extendBounds(bounds, pickupCoords);
+    this.googleMapsService.fitBounds(this.map, bounds);
 
     const startTime = performance.now();
     const durationMs = 8000;
@@ -319,16 +286,14 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
 
       const currentLat = startLat + (pickupLat - startLat) * easeProgress;
       const currentLng = startLng + (pickupLng - startLng) * easeProgress;
+      const currentCoords = this.googleMapsService.createLatLng(currentLat, currentLng);
 
       if (this.driverMarker) {
-        this.driverMarker.setLatLng([currentLat, currentLng]);
+        this.googleMapsService.setMarkerPosition(this.driverMarker, currentCoords);
       }
 
       if (this.driverApproachPolyline) {
-        this.driverApproachPolyline.setLatLngs([
-          [currentLat, currentLng],
-          [pickupLat, pickupLng]
-        ]);
+        this.googleMapsService.setPolylinePath(this.driverApproachPolyline, [currentCoords, pickupCoords]);
       }
 
       const remainingDist = (1 - easeProgress) * totalDistKm;
@@ -397,35 +362,29 @@ export class PassengerHomePage implements OnInit, OnDestroy, AfterViewInit {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    if (this.destinationMarker) { this.destinationMarker.remove(); this.destinationMarker = undefined; }
-    if (this.driverMarker) { this.driverMarker.remove(); this.driverMarker = undefined; }
-    if (this.routePolyline) { this.routePolyline.remove(); this.routePolyline = undefined; }
-    if (this.driverApproachPolyline) { this.driverApproachPolyline.remove(); this.driverApproachPolyline = undefined; }
+    if (this.destinationMarker) { this.destinationMarker.setMap(null); this.destinationMarker = undefined; }
+    if (this.driverMarker) { this.driverMarker.setMap(null); this.driverMarker = undefined; }
+    if (this.routePolyline) { this.routePolyline.setMap(null); this.routePolyline = undefined; }
+    if (this.driverApproachPolyline) { this.driverApproachPolyline.setMap(null); this.driverApproachPolyline = undefined; }
 
     const lat = 40.7484;
     const lng = -73.9856;
+    const pickupCoords = this.googleMapsService.createLatLng(lat, lng);
 
     if (this.map) {
-      this.map.setView([lat, lng], 14);
+      this.map.setCenter(pickupCoords);
+      this.map.setZoom(14);
       if (!this.pickupMarker) {
-        const pickupIcon = L.divIcon({
-          className: "custom-pickup-pin",
-          html: `
-            <div style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-              <div style="position: absolute; width: 32px; height: 32px; background: #0066FF; opacity: 0.3; border-radius: 50%;"></div>
-              <div style="width: 14px; height: 14px; background: #0066FF; border: 3px solid white; border-radius: 50%; z-index: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
-            </div>
-          `,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16]
-        });
-        this.pickupMarker = L.marker([lat, lng], { icon: pickupIcon }).addTo(this.map);
+        const pickupIcon = this.googleMapsService.addMarker(this.map, pickupCoords);
+        this.pickupMarker = pickupIcon;
+      } else {
+        this.googleMapsService.setMarkerPosition(this.pickupMarker, pickupCoords);
       }
     }
   }
 
   showProfile() { this.router.navigate(["/login"]); }
-async callDriver() {
+  async callDriver() {
     const alert = await this.alertController.create({
       header: `Calling ${this.activeRide?.ownerInfo?.name || "Driver"}`,
       message: `Connecting to ${this.activeRide?.ownerInfo?.phone || "driver"}...`,

@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
+  googleMapsApiKey: 'AIzaSyBLWWOTWZu-IlXQhBblDjFACbFSic8VZFo',
   apiUrl: 'https://api.para-ride.com/api'
 };
